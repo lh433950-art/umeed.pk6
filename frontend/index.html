@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Umeed — considered everyday clothing, made to last.">
+    <title>Umeed — Everyday, Elevated</title>
+    <link rel="icon" type="image/jpeg" href="images/logo.jpeg">
+    <link rel="apple-touch-icon" href="images/logo.jpeg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="umeedstyle.css">
+</head>
+<body>
+    <div class="announcement">Complimentary delivery on orders over Rs. 5,000 <span>✦</span> Designed in Pakistan</div>
+    <header class="main-header">
+        <a class="logo" href="index.html" aria-label="Umeed home"><img src="images/logo.jpeg" alt="Umeed logo"><span class="brand-wordmark">umeed.pk6</span></a>
+        <nav class="nav-links" aria-label="Primary navigation">
+            <a href="#collection">Shop all</a>
+            <a href="#story">Our story</a>
+            <a href="#reviews">Journal</a>
+        </nav>
+        <div class="header-actions">
+            <a class="admin-link" href="admin.html">Admin</a>
+            <button class="cart-trigger" id="cart-trigger" aria-label="Open shopping bag">Bag <span id="cart-count">0</span></button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero-banner">
+            <div class="hero-content">
+                <p class="eyebrow">The new season / 2026</p>
+                <h1>Quiet confidence,<br><em>beautifully made.</em></h1>
+                <p class="hero-copy">Thoughtful silhouettes and soft, considered fabrics for every version of you.</p>
+                <a href="#collection" class="cta-btn">Explore the collection <span>↗</span></a>
+            </div>
+            <div class="hero-note">UM / 01<br><span>Essential forms</span></div>
+        </section>
+
+        <section class="values-row" aria-label="Umeed values">
+            <div><strong>01</strong><span>Made with intention</span></div>
+            <div><strong>02</strong><span>Quality you can feel</span></div>
+            <div><strong>03</strong><span>Delivered with care</span></div>
+        </section>
+
+        <section id="collection" class="collection-section">
+            <div class="section-heading">
+                <div><p class="eyebrow">Curated for you</p><h2>New in</h2></div>
+                <div class="shop-tools">
+                    <label class="search-box">⌕ <input id="product-search" type="search" placeholder="Search pieces"></label>
+                    <select id="category-filter" aria-label="Filter by category"><option value="all">All categories</option></select>
+                </div>
+            </div>
+            <div id="product-list" class="product-grid" aria-live="polite"></div>
+            <p id="empty-state" class="empty-state hidden">No pieces match your search yet.</p>
+        </section>
+
+        <section id="story" class="story-section">
+            <div class="story-image"></div>
+            <div class="story-content"><p class="eyebrow">A little about us</p><h2>Clothes that leave room for life.</h2><p>Umeed is a wardrobe of lasting essentials, made for the days that become memories. We believe getting dressed should feel as good as it looks.</p><a href="#reviews" class="text-link">Read our journal <span>→</span></a></div>
+        </section>
+
+        <section id="reviews" class="reviews-section">
+            <p class="eyebrow">The Umeed edit</p><h2>Loved by our community</h2>
+            <div class="reviews-grid"><blockquote>“The quality is exceptional and every detail feels intentional.”<cite>— Ayesha M.</cite></blockquote><blockquote>“My new favourite everyday pieces. Beautifully packed, too.”<cite>— Fatima K.</cite></blockquote><blockquote>“The fit, the fabric, the service — all perfect.”<cite>— Mahnoor S.</cite></blockquote></div>
+        </section>
+    </main>
+
+<footer class="main-footer"><div class="footer-brand"><a class="logo" href="#" aria-label="Umeed home"><img src="images/logo.jpeg" alt="Umeed logo"><span class="brand-wordmark">umeed.pk6</span></a><p>Everyday, elevated.</p></div><div><p class="footer-label">Explore</p><a href="#collection">Shop all</a><a href="#story">Our story</a><a href="#policies">Shipping & returns</a></div><div><p class="footer-label">Need help?</p><button class="footer-link" id="track-order-trigger">Track an order</button><p>support@umeed.pk</p><p>+92 300 1234567</p></div><p class="footer-bottom">© 2026 Umeed. Made with intention.</p></footer>
+
+    <div id="cart-overlay" class="cart-overlay hidden"></div>
+    <aside id="cart-drawer" class="cart-drawer" aria-label="Shopping bag" aria-hidden="true">
+        <div class="cart-header"><div><p class="eyebrow">Your selection</p><h2>Shopping bag <span id="drawer-count">0</span></h2></div><button id="cart-close" class="icon-button" aria-label="Close shopping bag">×</button></div>
+        <div id="cart-items" class="cart-items"></div>
+        <div id="cart-empty" class="cart-empty"><span>✦</span><p>Your bag is waiting<br>for something special.</p><a href="#collection" id="continue-shopping">Continue shopping</a></div>
+        <div id="cart-summary" class="cart-summary hidden"><div><span>Subtotal</span><strong id="cart-subtotal">Rs. 0</strong></div><p>Shipping calculated at checkout. Free delivery over Rs. 5,000.</p><button id="checkout-button" class="checkout-btn">Checkout <span>→</span></button></div>
+    </aside>
+    <div id="toast" class="toast" role="status"></div>
+    <div id="checkout-modal" class="checkout-modal hidden">
+        <form id="checkout-form" class="checkout-form">
+            <div class="cart-header"><div><p class="eyebrow">Almost there</p><h2>Delivery details</h2></div><button type="button" id="checkout-close" class="icon-button">×</button></div>
+            <p class="checkout-note">We currently accept cash on delivery across Pakistan.</p>
+            <div class="checkout-fields"><label>Full name<input name="name" required autocomplete="name" placeholder="Your name"></label><label>Phone number<input name="phone" required autocomplete="tel" placeholder="+92 300 1234567"></label><label class="full-field">Email <span>(optional)</span><input name="email" type="email" autocomplete="email" placeholder="you@example.com"></label><label class="full-field">Street address<input name="address" required autocomplete="street-address" placeholder="House, street, area"></label><label>City<input name="city" required autocomplete="address-level2" placeholder="Lahore"></label><label>Payment<input value="Cash on delivery" disabled></label></div>
+            <p id="checkout-error" class="checkout-error"></p><button class="checkout-btn" type="submit">Place order <span>→</span></button>
+        </form>
+    </div>
+    <div id="product-modal" class="checkout-modal hidden"></div>
+    <div id="track-modal" class="checkout-modal hidden">
+        <form id="track-form" class="checkout-form">
+            <div class="cart-header"><div><p class="eyebrow">Order support</p><h2>Track your order</h2></div><button type="button" class="icon-button modal-close">×</button></div>
+            <p class="checkout-note">Use the order reference shown after checkout and the phone number used for delivery.</p>
+            <div class="checkout-fields"><label>Order reference<input name="orderId" required placeholder="e.g. 65f3a1"></label><label>Phone number<input name="phone" required placeholder="+92 300 1234567"></label></div>
+            <p id="track-result" class="checkout-error"></p><button class="checkout-btn" type="submit">Find order <span>→</span></button>
+        </form>
+    </div>
+    <section id="policies" class="policy-strip"><div><strong>Delivery</strong><span>3–5 working days across Pakistan</span></div><div><strong>Returns</strong><span>Easy exchange within 7 days</span></div><div><strong>Care</strong><span>We reply within one business day</span></div></section>
+    <script src="script.js"></script>
+</body>
+</html>
