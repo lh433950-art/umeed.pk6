@@ -184,11 +184,15 @@ app.delete('/api/products/:id', async (req, res) => {
 });
 
 // Admin Login Route
+// Admin Login Route (Fixed & Direct Match)
 app.post('/api/admin/login', (req, res) => {
     const { email, username, password } = req.body;
-    const loginEmail = email || username;
-    if (loginEmail === adminEmail && password === adminPassword) {
-        const token = crypto.createHmac('sha256', adminSessionSecret).update(adminEmail).digest('hex');
+    const inputUser = email || username || '';
+    const inputPass = password || '';
+
+    // Hardcode check taake koi confusion na ho
+    if ((inputUser.trim() === 'laiba' || inputUser.trim() === 'laiba') && inputPass === 'umeedcloth') {
+        const token = crypto.createHmac('sha256', 'umeedcloth').update('laiba').digest('hex');
         res.json({ success: true, message: 'Login successful', token });
     } else {
         res.json({ success: false, message: 'Invalid username or password' });
