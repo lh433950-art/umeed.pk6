@@ -62,13 +62,18 @@ app.get('/api/products', async (req, res) => {
 });
 
 // 2. Add Product (Admin)
-app.post('/api/products', (req, res, next) => {
-    if (!requireAdmin(req, res)) return;
-    upload.single('image')(req, res, err => {
-        if (err) return res.status(400).json({ error: err.message });
-        next();
-    });
-}, async (req, res) => {
+// Admin Login Route (Foolproof: Allows login with password 'umeedcloth')
+app.post('/api/admin/login', (req, res) => {
+    const { password } = req.body;
+
+    // Agar password 'umeedcloth' theek hai toh login ho jaye ga
+    if (password === 'umeedcloth') {
+        const token = crypto.createHmac('sha256', 'umeedcloth').update('laiba').digest('hex');
+        res.json({ success: true, message: 'Login successful', token });
+    } else {
+        res.json({ success: false, message: 'Invalid password' });
+    }
+}); async (req, res) => {
     try {
         const { title, price, category, stock, description, sizes } = req.body;
         if (!req.file) return res.status(400).json({ error: 'Please choose a product image.' });
