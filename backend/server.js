@@ -63,17 +63,21 @@ app.get('/api/products', async (req, res) => {
 
 // 2. Add Product (Admin)
 // Admin Login Route (Foolproof: Allows login with password 'umeedcloth')
+// Admin Login Route (Accepts username or email flexibly with password 'umeedcloth')
 app.post('/api/admin/login', (req, res) => {
-    const { password } = req.body;
+    const { email, username, password } = req.body;
+    const inputLogin = (email || username || '').trim().toLowerCase();
+    const inputPass = password || '';
 
-    // Agar password 'umeedcloth' theek hai toh login ho jaye ga
-    if (password === 'umeedcloth') {
+    // Agar password theek hai aur email/username mein 'laiba' ya kuch bhi ho (ya email format mein ho)
+    if (inputPass === 'umeedcloth') {
         const token = crypto.createHmac('sha256', 'umeedcloth').update('laiba').digest('hex');
         res.json({ success: true, message: 'Login successful', token });
     } else {
-        res.json({ success: false, message: 'Invalid password' });
+        res.json({ success: false, message: 'Invalid email or password' });
     }
-}); async (req, res) => {
+});
+async (req, res) => {
     try {
         const { title, price, category, stock, description, sizes } = req.body;
         if (!req.file) return res.status(400).json({ error: 'Please choose a product image.' });
