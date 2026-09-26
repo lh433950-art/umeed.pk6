@@ -6,18 +6,13 @@ const manageSection = document.getElementById('manage-section');
 let adminToken = sessionStorage.getItem('umeed-admin-token');
 let lastKnownOrderId = null;
 let orderPoller = null;
-const ownerEmailField = document.getElementById('email') || document.getElementById('username');
-ownerEmailField.type = 'email';
-ownerEmailField.id = 'email';
-ownerEmailField.name = 'email';
-ownerEmailField.autocomplete = 'email';
-ownerEmailField.previousElementSibling.textContent = 'Owner email';
+
 const statusMessage = (id, message) => { document.getElementById(id).textContent = message; };
 const adminFetch = (url, options = {}) => fetch(url, { ...options, headers: { ...(options.headers || {}), Authorization: `Bearer ${adminToken}` } });
 
 function notifyAdminAboutOrder(order) {
     const orderTitle = `New order received #${order._id.slice(-6).toUpperCase()}`;
-    const body = `${order.customer.name} · ${order.items.map(item => `${item.title} × ${item.quantity}`).join(', ')}`;
+    const body = `${order.customer.name} · ${order.items.map(item => `${item.title} ×${item.quantity}`).join(', ')}`;
     const notifyBox = document.getElementById('order-notify');
     if (notifyBox) {
         notifyBox.textContent = `${orderTitle} — ${body}`;
@@ -38,7 +33,14 @@ function notifyAdminAboutOrder(order) {
 
 document.getElementById('login-form').addEventListener('submit', async event => {
     event.preventDefault();
-    const response = await fetch(`${API_URL}/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('email').value, password: document.getElementById('password').value }) });
+    const response = await fetch(`${API_URL}/admin/login`, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ 
+            username: document.getElementById('username').value, 
+            password: document.getElementById('password').value 
+        }) 
+    });
     const result = await response.json();
     if (!result.success) return statusMessage('login-status', result.message || 'Unable to sign in.');
     adminToken = result.token;
@@ -75,7 +77,7 @@ document.getElementById('productForm').addEventListener('submit', async event =>
 async function loadAdminProducts() {
     const response = await adminFetch(`${API_URL}/products`);
     const products = await response.json();
-    document.getElementById('admin-product-list').innerHTML = `<table class="inventory-table"><thead><tr><th>Piece</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody>${products.map(product => `<tr><td><img src="${imageUrl(product.image)}" alt="">${product.title}</td><td>${product.category}</td><td>Rs. ${Number(product.price).toLocaleString('en-PK')}</td><td><input class="stock-input" type="number" min="0" value="${product.stock}" id="stock-${product._id}"><button class="action-btn" onclick="updateStock('${product._id}')">Save</button></td><td><button class="action-btn delete-btn" onclick="deleteProduct('${product._id}')">Remove</button></td></tr>`).join('')}</tbody></table>`;
+    document.getElementById('admin-product-list').innerHTML = `<table class="inventory-table"><thead><tr><th>Piece</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody>${products.map(product => `<tr><td><img src="${imageUrl(product.image)}" alt="">${product.title}</td><td>${product.category}</td><td>Rs.${Number(product.price).toLocaleString('en-PK')}</td><td><input class="stock-input" type="number" min="0" value="${product.stock}" id="stock-${product._id}"><button class="action-btn" onclick="updateStock('${product._id}')">Save</button></td><td><button class="action-btn delete-btn" onclick="deleteProduct('${product._id}')">Remove</button></td></tr>`).join('')}</tbody></table>`;
 }
 
 async function updateStock(id) {
@@ -99,7 +101,7 @@ async function loadOrders() {
         notifyAdminAboutOrder(orders[0]);
     }
     lastKnownOrderId = orders.length ? orders[0]._id : lastKnownOrderId;
-    document.getElementById('admin-order-list').innerHTML = orders.length ? orders.map(order => `<div class="order-row"><div><strong>#${order._id.slice(-6).toUpperCase()} · ${order.customer.name}</strong><p>${order.customer.phone} · ${order.customer.city} · ${order.customer.address}</p><p>${order.items.map(item => `${item.title} × ${item.quantity}`).join(', ')}</p></div><div><strong>Rs. ${Number(order.total).toLocaleString('en-PK')}</strong><select onchange="updateOrderStatus('${order._id}', this.value)">${['New', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'].map(status => `<option ${status === order.status ? 'selected' : ''}>${status}</option>`).join('')}</select></div></div>`).join('') : '<p class="status">No customer orders yet.</p>';
+    document.getElementById('admin-order-list').innerHTML = orders.length ? orders.map(order => `<div class="order-row"><div><strong>#${order._id.slice(-6).toUpperCase()} · ${order.customer.name}</strong><p>${order.customer.phone} · ${order.customer.city} · ${order.customer.address}</p><p>${order.items.map(item => `${item.title} ×${item.quantity}`).join(', ')}</p></div><div><strong>Rs. ${Number(order.total).toLocaleString('en-PK')}</strong><select onchange="updateOrderStatus('${order._id}', this.value)">${['New', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'].map(status => `<option ${status === order.status ? 'selected' : ''}>${status}</option>`).join('')}</select></div></div>`).join('') : '<p class="status">No customer orders yet.</p>';
 }
 
 async function updateOrderStatus(id, status) {
