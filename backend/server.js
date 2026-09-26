@@ -4,16 +4,16 @@ const cors = require('cors');
 const multer = require('multer');
 const crypto = require('crypto');
 const path = require('path');
-const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
-const adminSessions = new Set();
 
 // Direct Credentials & Connection (Safe for local & deployment)
 const adminUsername = process.env.ADMIN_USERNAME || 'laiba';
+const adminEmail = process.env.ADMIN_EMAIL || adminUsername;
 const adminPassword = process.env.ADMIN_PASSWORD || 'umeedcloth';
-const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://lh433950_db_user:LlgzgQn1m35Cp1cp@cluster0.ktlfoxd.mongodb.net/umeed_db?retryWrites=true&w=majority';
+const adminSessionSecret = process.env.ADMIN_SESSION_SECRET || adminPassword;
+const mongoUri = process.env.MONGODB_URI;
 
 // Middleware
 app.use(cors({ origin: process.env.FRONTEND_URL || true }));
@@ -25,28 +25,22 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // MongoDB Connection
-mongoose.connect(mongoUri)
-    .then(() => console.log('MongoDB Connected Successfully to Umeed.pk DB'))
-    .catch(err => console.error('MongoDB Connection Error:', err.message));
+if (!mongoUri) {
+    console.error('MONGODB_URI is required to start the application.');
+} else {
+    mongoose.connect(mongoUri)
+        .then(() => console.log('MongoDB Connected Successfully to Umeed.pk DB'))
+        .catch(err => console.error('MongoDB Connection Error:', err.message));
+}
 
 // Models Import
 const Product = require('./models/Product');
 const Order = require('./models/Order');
 const Review = require('./models/review');
 
-// Multer Setup for Image Uploads
-const uploadDirectory = path.join(__dirname, 'uploads');
-fs.mkdirSync(uploadDirectory, { recursive: true });
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDirectory);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
+// Store image data with the product so serverless deployments do not lose uploads.
 const upload = multer({
-    storage,
+    storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (!file.mimetype.startsWith('image/')) return cb(new Error('Only image files are allowed.'));
@@ -78,7 +72,7 @@ app.post('/api/products', (req, res, next) => {
     try {
         const { title, price, category, stock, description, sizes } = req.body;
         if (!req.file) return res.status(400).json({ error: 'Please choose a product image.' });
-        const image = `/uploads/${req.file.filename}`;
+        const image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
         const newProduct = new Product({
             title,
@@ -156,6 +150,18 @@ app.post('/api/orders', async (req, res) => {
     }
 });
 
+app.get('/api/orders/:id', async (req, res) => {
+    try {
+        const phone = String(req.query.phone || '').trim();
+        if (!phone) return res.status(400).json({ message: 'Phone number is required.' });
+        const order = await Order.findOne({ _id: req.params.id, 'customer.phone': phone });
+        if (!order) return res.status(404).json({ message: 'Order not found.' });
+        res.json(order);
+    } catch (err) {
+        res.status(404).json({ message: 'Order not found.' });
+    }
+});
+
 app.get('/api/orders', async (req, res) => {
     try {
         if (!requireAdmin(req, res)) return;
@@ -179,10 +185,10 @@ app.delete('/api/products/:id', async (req, res) => {
 
 // Admin Login Route
 app.post('/api/admin/login', (req, res) => {
-    const { username, password } = req.body;
-    if (username === adminUsername && password === adminPassword) {
-        const token = crypto.randomBytes(32).toString('hex');
-        adminSessions.add(token);
+    const { email, username, password } = req.body;
+    const loginEmail = email || username;
+    if (loginEmail === adminEmail && password === adminPassword) {
+        const token = crypto.createHmac('sha256', adminSessionSecret).update(adminEmail).digest('hex');
         res.json({ success: true, message: 'Login successful', token });
     } else {
         res.json({ success: false, message: 'Invalid username or password' });
@@ -191,7 +197,8 @@ app.post('/api/admin/login', (req, res) => {
 
 function requireAdmin(req, res) {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token || !adminSessions.has(token)) {
+    const expectedToken = crypto.createHmac('sha256', adminSessionSecret).update(adminEmail).digest('hex');
+    if (!token || token.length !== expectedToken.length || !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expectedToken))) {
         res.status(401).json({ error: 'Admin login required.' });
         return false;
     }
@@ -202,7 +209,7 @@ app.patch('/api/orders/:id/status', async (req, res) => {
     try {
         if (!requireAdmin(req, res)) return;
         const allowed = ['New', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'];
-        if (!allowed.includes(req.body.status)) return res.status(0).json({ error: 'Invalid order status.' });
+        if (!allowed.includes(req.body.status)) return res.status(400).json({ error: 'Invalid order status.' });
         const order = await Order.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
         if (!order) return res.status(404).json({ error: 'Order not found.' });
         res.json(order);

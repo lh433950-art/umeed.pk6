@@ -1,5 +1,6 @@
 const API_URL = window.APP_API_URL || `${window.location.origin}/api`;
 const MEDIA_URL = API_URL.replace('/api', '');
+const imageUrl = image => image?.startsWith('data:') ? image : `${MEDIA_URL}${image}`;
 let products = [];
 let cart = JSON.parse(localStorage.getItem('umeed-cart') || '[]');
 
@@ -33,7 +34,7 @@ function renderProducts() {
     document.getElementById('empty-state').classList.toggle('hidden', visible.length !== 0);
     grid.innerHTML = visible.map(product => {
         const soldOut = product.stock < 1;
-        const image = product.image ? `${MEDIA_URL}${product.image}` : 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?q=80&w=700&auto=format&fit=crop';
+        const image = product.image ? imageUrl(product.image) : 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?q=80&w=700&auto=format&fit=crop';
         return `<article class="product-card">
             <div class="product-image-wrap"><img src="${image}" alt="${escapeHtml(product.title)}" loading="lazy">${soldOut ? '<span class="product-badge">Sold out</span>' : product.stock < 5 ? '<span class="product-badge">Low stock</span>' : ''}</div>
             <div class="product-info"><h3>${escapeHtml(product.title)}</h3><div class="product-meta"><span>${escapeHtml(product.category)}</span><span class="product-price">${money(product.price)}</span></div>
@@ -47,7 +48,7 @@ function renderProducts() {
 function showProduct(id) {
     const product = products.find(item => item._id === id);
     if (!product) return;
-    const image = product.image ? `${MEDIA_URL}${product.image}` : '';
+    const image = product.image ? imageUrl(product.image) : '';
     document.getElementById('product-modal').innerHTML = `<div class="product-modal-card"><button class="icon-button modal-close">×</button><img src="${image}" alt="${escapeHtml(product.title)}"><div><p class="eyebrow">${escapeHtml(product.category)}</p><h2>${escapeHtml(product.title)}</h2><strong class="modal-price">${money(product.price)}</strong><p class="modal-description">${escapeHtml(product.description || 'A considered Umeed piece, made for everyday wear.')}</p><p class="size-label">Available sizes</p><div class="size-list">${(product.sizes?.length ? product.sizes : ['One size']).map(size => `<span>${escapeHtml(size)}</span>`).join('')}</div><button class="checkout-btn" onclick="addToCart('${product._id}'); closeProductModal();">Add to bag <span>→</span></button></div></div>`;
     document.getElementById('product-modal').classList.remove('hidden');
     document.querySelector('#product-modal .modal-close').addEventListener('click', closeProductModal);
@@ -95,7 +96,7 @@ function renderCart() {
     const lines = cart.map(item => {
         const product = products.find(entry => entry._id === item.id);
         if (!product) return '';
-        const image = product.image ? `${MEDIA_URL}${product.image}` : '';
+        const image = product.image ? imageUrl(product.image) : '';
         return `<div class="cart-line"><img src="${image}" alt=""><div><h3>${escapeHtml(product.title)}</h3><p>${money(product.price)}</p><div class="qty-controls"><button onclick="updateQuantity('${item.id}', -1)" aria-label="Decrease quantity">−</button><span>${item.quantity}</span><button onclick="updateQuantity('${item.id}', 1)" aria-label="Increase quantity">+</button><button class="remove-item" onclick="removeFromCart('${item.id}')">Remove</button></div></div><strong>${money(product.price * item.quantity)}</strong></div>`;
     }).join('');
     document.getElementById('cart-items').innerHTML = lines;

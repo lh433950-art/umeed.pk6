@@ -19,6 +19,7 @@ test('backend keeps database and admin credentials configurable', () => {
 
   assert.match(server, /process\.env\.MONGODB_URI/);
   assert.match(server, /process\.env\.ADMIN_USERNAME/);
+  assert.match(server, /process\.env\.ADMIN_EMAIL/);
   assert.match(server, /process\.env\.ADMIN_PASSWORD/);
   assert.match(server, /requireAdmin/);
   assert.match(adminScript, /sessionStorage\.setItem\('umeed-admin-token'/);

@@ -1,10 +1,17 @@
 const API_URL = window.APP_API_URL || `${window.location.origin}/api`;
 const MEDIA_URL = API_URL.replace('/api', '');
+const imageUrl = image => image?.startsWith('data:') ? image : `${MEDIA_URL}${image}`;
 const loginSection = document.getElementById('login-section');
 const manageSection = document.getElementById('manage-section');
 let adminToken = sessionStorage.getItem('umeed-admin-token');
 let lastKnownOrderId = null;
 let orderPoller = null;
+const ownerEmailField = document.getElementById('email') || document.getElementById('username');
+ownerEmailField.type = 'email';
+ownerEmailField.id = 'email';
+ownerEmailField.name = 'email';
+ownerEmailField.autocomplete = 'email';
+ownerEmailField.previousElementSibling.textContent = 'Owner email';
 const statusMessage = (id, message) => { document.getElementById(id).textContent = message; };
 const adminFetch = (url, options = {}) => fetch(url, { ...options, headers: { ...(options.headers || {}), Authorization: `Bearer ${adminToken}` } });
 
@@ -31,7 +38,7 @@ function notifyAdminAboutOrder(order) {
 
 document.getElementById('login-form').addEventListener('submit', async event => {
     event.preventDefault();
-    const response = await fetch(`${API_URL}/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.getElementById('username').value, password: document.getElementById('password').value }) });
+    const response = await fetch(`${API_URL}/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('email').value, password: document.getElementById('password').value }) });
     const result = await response.json();
     if (!result.success) return statusMessage('login-status', result.message || 'Unable to sign in.');
     adminToken = result.token;
@@ -68,7 +75,7 @@ document.getElementById('productForm').addEventListener('submit', async event =>
 async function loadAdminProducts() {
     const response = await adminFetch(`${API_URL}/products`);
     const products = await response.json();
-    document.getElementById('admin-product-list').innerHTML = `<table class="inventory-table"><thead><tr><th>Piece</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody>${products.map(product => `<tr><td><img src="${MEDIA_URL}${product.image}" alt="">${product.title}</td><td>${product.category}</td><td>Rs. ${Number(product.price).toLocaleString('en-PK')}</td><td><input class="stock-input" type="number" min="0" value="${product.stock}" id="stock-${product._id}"><button class="action-btn" onclick="updateStock('${product._id}')">Save</button></td><td><button class="action-btn delete-btn" onclick="deleteProduct('${product._id}')">Remove</button></td></tr>`).join('')}</tbody></table>`;
+    document.getElementById('admin-product-list').innerHTML = `<table class="inventory-table"><thead><tr><th>Piece</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody>${products.map(product => `<tr><td><img src="${imageUrl(product.image)}" alt="">${product.title}</td><td>${product.category}</td><td>Rs. ${Number(product.price).toLocaleString('en-PK')}</td><td><input class="stock-input" type="number" min="0" value="${product.stock}" id="stock-${product._id}"><button class="action-btn" onclick="updateStock('${product._id}')">Save</button></td><td><button class="action-btn delete-btn" onclick="deleteProduct('${product._id}')">Remove</button></td></tr>`).join('')}</tbody></table>`;
 }
 
 async function updateStock(id) {
